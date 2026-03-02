@@ -19,6 +19,16 @@ router.get('/signature', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Handle preflight requests for /api/upload
+router.options('/', (req, res) => {
+  res.set('Access-Control-Allow-Origin', 'https://student-panel-frontend-sigma.vercel.app');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
+});
+
 // POST upload via server (accepts base64 data URI)
 router.post('/', async (req, res) => {
   try {
