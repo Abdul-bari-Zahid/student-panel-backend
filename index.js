@@ -15,6 +15,7 @@ const corsOptions = {
   credentials: true
 };
 
+// Ensure CORS middleware is applied globally before routes
 app.use(cors(corsOptions));
 // allow larger JSON bodies for base64 image uploads
 app.use(express.json({ limit: '10mb' }));
