@@ -29,6 +29,15 @@ router.options('/', (req, res) => {
   res.sendStatus(204);
 });
 
+// Ensure CORS headers for all responses
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://student-panel-frontend-sigma.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 // POST upload via server (accepts base64 data URI)
 router.post('/', async (req, res) => {
   try {
