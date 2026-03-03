@@ -5,35 +5,27 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const app = express();
+// Temporary CORS: echo request origin so deployed frontend preflight passes.
+// For production restrict this to exact origins.
 const corsOptions = {
-  origin: [
-    'https://student-panel-frontend-sigma.vercel.app',
-    'http://localhost:5173'
-  ],
+  origin: true, // reflect request origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
 
-// Ensure CORS middleware is applied globally before routes
-app.use(cors(corsOptions));
-// Explicitly handle preflight for all /api routes (helps some serverless platforms)
-app.options('/api/*', cors(corsOptions));
-// Fallback middleware to always set CORS headers for responses (defensive)
 app.use((req, res, next) => {
-  const allowed = corsOptions.origin;
-  const origin = req.headers.origin;
-  if (Array.isArray(allowed) && allowed.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (allowed === '*') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+  // log for deployed debugging
+  if (req.headers && req.headers.origin) {
+    console.log('Incoming request origin:', req.headers.origin, req.method, req.path);
   }
-  res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(','));
-  res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(','));
-  if (corsOptions.credentials) res.setHeader('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
+// Apply CORS middleware globally (will echo origin)
+app.use(cors(corsOptions));
+// Preflight handler - MUST come before routes
+app.options('*', cors(corsOptions));
 // allow larger JSON bodies for base64 image uploads
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
