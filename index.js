@@ -7,27 +7,31 @@ dotenv.config();
 const app = express();
 // Temporary CORS: echo request origin so deployed frontend preflight passes.
 // For production restrict this to exact origins.
-const allowedOrigins = [
-  'https://student-panel-frontend-sigma.vercel.app',
-  'http://localhost:5173', // Vite default local
-  'http://localhost:3000'
-];
-
-const corsOptions = {
+app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    const allowed = [
+      'https://student-panel-frontend-sigma.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    if (!origin || allowed.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
+  optionsSuccessStatus: 200
+}));
+
+// Handle preflight for all routes explicitly
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://student-panel-frontend-sigma.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 app.use((req, res, next) => {
   // log for deployed debugging
@@ -37,8 +41,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight for all routes
 // allow larger JSON bodies for base64 image uploads
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
