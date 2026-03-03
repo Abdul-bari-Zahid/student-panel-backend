@@ -7,29 +7,32 @@ dotenv.config();
 const app = express();
 // Temporary CORS: echo request origin so deployed frontend preflight passes.
 // For production restrict this to exact origins.
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    // Allow any .vercel.app subdomain or localhost
-    const isVercel = origin.endsWith('.vercel.app');
-    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-    if (isVercel || isLocal) {
-      callback(null, true);
-    } else {
-      callback(null, false); // Just deny instead of throwing error which triggers 500
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+// Manual CORS Handling (In-order middleware)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = [
+    'https://student-panel-frontend-sigma.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
 
-// Handle preflight for all routes explicitly
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://student-panel-frontend-sigma.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
+  // Allow if in list or if it's a vercel subdomain
+  const isVercel = origin && origin.endsWith('.vercel.app');
+  if (!origin || allowed.includes(origin) || isVercel) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  } else {
+    // If not allowed, we don't set the header, browser will block it.
+    // No error thrown to avoid 500 status.
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
 });
 
 app.use((req, res, next) => {
