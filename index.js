@@ -9,15 +9,14 @@ const app = express();
 // For production restrict this to exact origins.
 app.use(cors({
   origin: function (origin, callback) {
-    const allowed = [
-      'https://student-panel-frontend-sigma.vercel.app',
-      'http://localhost:5173',
-      'http://localhost:3000'
-    ];
-    if (!origin || allowed.indexOf(origin) !== -1) {
+    if (!origin) return callback(null, true);
+    // Allow any .vercel.app subdomain or localhost
+    const isVercel = origin.endsWith('.vercel.app');
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    if (isVercel || isLocal) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false); // Just deny instead of throwing error which triggers 500
     }
   },
   credentials: true,
