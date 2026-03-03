@@ -17,6 +17,23 @@ const corsOptions = {
 
 // Ensure CORS middleware is applied globally before routes
 app.use(cors(corsOptions));
+// Explicitly handle preflight for all /api routes (helps some serverless platforms)
+app.options('/api/*', cors(corsOptions));
+// Fallback middleware to always set CORS headers for responses (defensive)
+app.use((req, res, next) => {
+  const allowed = corsOptions.origin;
+  const origin = req.headers.origin;
+  if (Array.isArray(allowed) && allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (allowed === '*') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(','));
+  res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(','));
+  if (corsOptions.credentials) res.setHeader('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 // allow larger JSON bodies for base64 image uploads
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
