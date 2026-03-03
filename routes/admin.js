@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken, isAdmin } = require('../middleware/auth');
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 router.post('/add', verifyToken, isAdmin, async (req, res) => {
   const { name, email, password } = req.body;

@@ -52,24 +52,46 @@ const User = require('./models/User');
 const Student = require('./models/Student');
 const Subject = require('./models/Subject');
 
-// Routes
-app.get('/', (req, res) => {
-  res.send('Student Admin API is running');
+// MongoDB connection helper
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected) return;
+  try {
+    if (!process.env.MONGO_URI) {
+      console.warn('MONGO_URI not found, skipping DB connection');
+      return;
+    }
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+    console.log('Mongo connected');
+  } catch (err) {
+    console.error('Mongo connection error:', err);
+  }
+};
+
+// Middleware to ensure DB connection for every request
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
 });
+
+// Routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', db: isConnected });
+});
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/students', require('./routes/students'));
 app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/mern_admin')
-  .then(() => {
-    console.log('Mongo connected');
-  })
-  .catch(err => console.error(err));
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => console.log(`Server running on ${PORT}`));
-}
-
+// Export for Vercel
 module.exports = app;
+
+// Local development
+if (process.env.NODE_ENV !== 'production' && require.main === module) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
+  });
+}
