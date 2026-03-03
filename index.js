@@ -86,6 +86,16 @@ app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('GLOBAL ERROR:', err);
+  res.status(500).json({
+    message: 'Internal Server Error',
+    error: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+  });
+});
+
 // Export for Vercel
 module.exports = app;
 

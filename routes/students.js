@@ -30,10 +30,11 @@ router.post('/public', async (req, res) => {
     if (exists) return res.status(400).json({ message: 'Student exists' });
     const s = new Student({ name, email, phone, department, semester, paymentImage, subjects: [] });
     await s.save();
-    res.json(await s.populate('subjects'));
+    const populated = await s.populate('subjects');
+    res.json(populated);
   } catch (err) {
     console.error('public submit error', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Submission failed', error: err.message });
   }
 });
 
