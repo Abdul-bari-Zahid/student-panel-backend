@@ -1,14 +1,14 @@
 {
-  "headers": [
+  "version": 2,
+  "rewrites": [
     {
-      "source": "/api/:path*",
-      "headers": [
-        { "key": "access-control-allow-origin", "value": "https://student-panel-frontend-sigma.vercel.app" },
-        { "key": "access-control-allow-methods", "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH" },
-        { "key": "access-control-allow-headers", "value": "Content-Type, Authorization" },
-        { "key": "access-control-max-age", "value": "86400" },
-        { "key": "access-control-allow-credentials", "value": "true" }
-      ]
+      "source": "/api/(.*)",
+      "destination": "/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.js"
     }
   ]
 }
+
