@@ -25,9 +25,9 @@ router.post('/', verifyToken, isAdmin, async (req, res) => {
 router.post('/public', async (req, res) => {
   try {
     const { name, email, phone, department, semester, paymentImage } = req.body;
-    if (!name || !email) return res.status(400).json({ message: 'Name and email required' });
+    if (!name || !email) return res.status(400).json({ message: 'Validation Error: Name and email are required' });
     const exists = await Student.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'Student exists' });
+    if (exists) return res.status(400).json({ message: 'Duplicate Error: A student with this email already exists' });
     const s = new Student({ name, email, phone, department, semester, paymentImage, subjects: [] });
     await s.save();
     const populated = await s.populate('subjects');
