@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
+const bcryptjs = require('bcryptjs')
 dotenv.config();
 const app = express();
 // Temporary CORS: echo request origin so deployed frontend preflight passes.
@@ -79,7 +79,17 @@ app.use(async (req, res, next) => {
 
 // Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', db: isConnected });
+  res.json({
+    status: 'ok',
+    db: isConnected,
+    env: {
+      MONGO: !!process.env.MONGO_URI,
+      CLOUDINARY_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+      CLOUDINARY_KEY: !!process.env.CLOUDINARY_API_KEY,
+      CLOUDINARY_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+      JWT: !!process.env.JWT_SECRET
+    }
+  });
 });
 
 app.use('/api/auth', require('./routes/auth'));

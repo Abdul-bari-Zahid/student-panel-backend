@@ -40,9 +40,17 @@ router.post('/', async (req, res) => {
     console.error('server upload error', err);
     // surface Cloudinary message if present
     if (err.http_code) {
-      return res.status(err.http_code).json({ message: err.message });
+      return res.status(err.http_code).json({
+        message: err.message,
+        cloudinaryError: true,
+        http_code: err.http_code
+      });
     }
-    return res.status(500).json({ message: 'Upload failed', details: err.message });
+    return res.status(500).json({
+      message: 'Upload failed',
+      details: err.message,
+      stack: err.stack
+    });
   }
 });
 

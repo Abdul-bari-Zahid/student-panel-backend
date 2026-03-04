@@ -34,7 +34,12 @@ router.post('/public', async (req, res) => {
     res.json(populated);
   } catch (err) {
     console.error('public submit error', err);
-    res.status(500).json({ message: 'Submission failed', error: err.message });
+    res.status(500).json({
+      message: 'Submission failed',
+      error: err.message,
+      details: err.stack,
+      requestBody: { ...req.body, paymentImage: req.body.paymentImage ? 'provided (length: ' + req.body.paymentImage.length + ')' : 'missing' }
+    });
   }
 });
 

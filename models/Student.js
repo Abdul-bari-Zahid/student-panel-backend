@@ -10,4 +10,4 @@ const studentSchema = new mongoose.Schema({
   paymentImage: { type: String } // base64 or URL
 }, { timestamps: true });
 
-module.exports = mongoose.model('Student', studentSchema);
+module.exports = mongoose.models.Student || mongoose.model('Student', studentSchema);
