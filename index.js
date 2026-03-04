@@ -57,14 +57,15 @@ const Subject = require('./models/Subject');
 // MongoDB connection helper
 let isConnected = false;
 const connectDB = async () => {
-  if (isConnected) return;
+  if (mongoose.connection.readyState >= 1) return;
   try {
     if (!process.env.MONGO_URI) {
-      console.warn('MONGO_URI not found, skipping DB connection');
+      console.warn('MONGO_URI not found');
       return;
     }
-    await mongoose.connect(process.env.MONGO_URI);
-    isConnected = true;
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000, // focus on fast fail/retry
+    });
     console.log('Mongo connected');
   } catch (err) {
     console.error('Mongo connection error:', err);
@@ -81,7 +82,7 @@ app.use(async (req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    db: isConnected,
+    db: mongoose.connection.readyState === 1,
     env: {
       MONGO: !!process.env.MONGO_URI,
       CLOUDINARY_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
